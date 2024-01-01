@@ -1,3 +1,4 @@
+
 '''
 Đọc vào 4 file raw
 Xử lý: 
@@ -248,7 +249,7 @@ def apply_lemmatization(text):
 
 processed_coursera['string'] = processed_coursera['string'].apply(apply_lemmatization)
 
-# keywords
+# Keywords
 model = KeyBERT()
 
 # Extract top 10 keywords for each row in the 'Merged' column

@@ -64,19 +64,11 @@ processed_pluralsight['InstructorName'] = processed_pluralsight['Instructor'].ap
 processed_pluralsight['InstructorName'] = processed_pluralsight['InstructorName'].str.replace('\n', '')
 processed_pluralsight = processed_pluralsight.rename(columns={'Instructor': 'Instructor_full'})
 
-
-
 # level
 level_mapping = {'Novice': 'Beginner', 'Practitioner': 'Beginner', 'Professional': 'Advanced', 'Introductory':'Beginner','Apprentice':'Beginner','Guru':'Advanced', 'Beginner':'Beginner','Intermediate':'Intermediate','Advanced':'Advanced'}
 
 processed_pluralsight['Level'] = processed_pluralsight['Level'].str.replace('\n', '')
 processed_pluralsight['Level'] = processed_pluralsight['Level'].replace({k: v for k, v in level_mapping.items()})
-
-
-
-# processed_pluralsight = processed_pluralsight.drop(columns=['Instructor','NumReviews'])
-
-
 
 # categories
 categories_keywords = {
@@ -265,12 +257,12 @@ processed_pluralsight['ReviewsURL'] = ''
 # Stars
 processed_pluralsight['Stars'].replace(to_replace=0, value=5.0, inplace=True)
 
-# Skills
-# processed_pluralsight.rename(columns={'Summarized_Skills': 'Skills'}, inplace=True)
-file2 = './merged_course_with_keywords.csv'
-df2 = pd.read_csv(file2)
-# Merge DataFrame theo cột 'Link'
-processed_pluralsight = pd.merge(processed_pluralsight, df2[['Link', 'Skills']], on='Link', how='left')
+# # Skills
+# # processed_pluralsight.rename(columns={'Summarized_Skills': 'Skills'}, inplace=True)
+# file2 = './merged_course_with_keywords.csv'
+# df2 = pd.read_csv(file2)
+# # Merge DataFrame theo cột 'Link'
+# processed_pluralsight = pd.merge(processed_pluralsight, df2[['Link', 'Skills']], on='Link', how='left')
 
 # Source
 processed_pluralsight['Source'] = 'Pluralsight'
@@ -296,6 +288,7 @@ def apply_lemmatization(text):
 
 processed_pluralsight['string']=processed_pluralsight['string'].apply(apply_lemmatization)
 
+# Keywords
 model = KeyBERT()
 
 # Extract top 10 keywords for each row in the 'Merged' column
@@ -304,9 +297,11 @@ processed_pluralsight['Keywords'] = processed_pluralsight['string'].progress_app
 
 processed_pluralsight['Keywords'] = processed_pluralsight['Keywords'].str.cat(processed_pluralsight['MasterCategories'], sep=', ')
 processed_pluralsight['Keywords'] = processed_pluralsight['Keywords'].str.cat(processed_pluralsight['Categories'], sep=', ')
-processed_pluralsight['Keywords'] = processed_pluralsight['Keywords'].str.cat(processed_pluralsight['Skills'], sep=', ')
+# processed_pluralsight['Keywords'] = processed_pluralsight['Keywords'].str.cat(processed_pluralsight['Skills'], sep=', ')
 processed_pluralsight['Keywords'] = processed_pluralsight['Keywords'].astype(str)
 
+# Skills
+processed_pluralsight['Skills'] = processed_pluralsight['Keywords']
 
 # Ghi DataFrame đã xử lý vào file CSV
 processed_pluralsight.to_csv('./data/pluralsight_processed.csv', index=False, mode='w')

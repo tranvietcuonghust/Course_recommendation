@@ -264,6 +264,7 @@ def apply_lemmatization(text):
 
 processed_edx['string']=processed_edx['string'].apply(apply_lemmatization)
 
+# Keywords
 model = KeyBERT()
 
 # Extract top 10 keywords for each row in the 'Merged' column

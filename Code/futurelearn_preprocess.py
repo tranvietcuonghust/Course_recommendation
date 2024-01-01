@@ -59,6 +59,19 @@ def extract_instructor_name(instructor_info):
 processed_futurelearn['InstructorName'] = processed_futurelearn['Instructor'].apply(extract_instructor_name)
 processed_futurelearn = processed_futurelearn.rename(columns={'Instructor': 'Instructor_full'})
 
+base_url = 'https://www.futurelearn.com'
+# Hàm để thêm đường dẫn vào chuỗi
+def add_base_url(row):
+    if row is not None and row != 'None':  # Kiểm tra giá trị None hoặc chuỗi 'None'
+        instructor_info = eval(row)  # Đánh giá chuỗi thành dictionary
+        if 'instructor_link' in instructor_info and instructor_info['instructor_link'] is not None:
+            instructor_info['instructor_link'] = base_url + instructor_info['instructor_link']
+            return str(instructor_info)  # Chuyển lại thành chuỗi
+    return row  # Trả lại giá trị ban đầu nếu có lỗi
+
+# Áp dụng hàm add_base_url cho cột "Instructor_full"
+processed_futurelearn['Instructor_full'] = processed_futurelearn['Instructor_full'].apply(add_base_url)
+
 # Price
 def extract_price_number(price):
     numbers = re.findall(r'\d+\.\d+|\d+', str(price))
@@ -230,12 +243,18 @@ processed_futurelearn['Modules'] = '[{"module_number": None, "module_name": None
 processed_futurelearn['ReviewsURL'] = ''
 
 # Skills
-processed_futurelearn = processed_futurelearn.drop('Skills', axis=1)
-# processed_futurelearn.rename(columns={'Summarized_Skills': 'Skills'}, inplace=True)
-file2 = './merged_course_with_keywords.csv'
-df2 = pd.read_csv(file2)
-# Merge DataFrame theo cột 'Link'
-processed_futurelearn = pd.merge(processed_futurelearn, df2[['Link', 'Skills']], on='Link', how='left')
+# processed_futurelearn = processed_futurelearn.drop('Skills', axis=1)
+# # processed_futurelearn.rename(columns={'Summarized_Skills': 'Skills'}, inplace=True)
+# file2 = './merged_course_with_keywords.csv'
+# df2 = pd.read_csv(file2)
+# # Merge DataFrame theo cột 'Link'
+# processed_futurelearn = pd.merge(processed_futurelearn, df2[['Link', 'Skills']], on='Link', how='left')
+model = KeyBERT()
+
+# Extract top 10 keywords for each row in the 'Merged' column
+tqdm.pandas()
+processed_futurelearn['Skills'] = processed_futurelearn['Skills'].astype(str)
+processed_futurelearn['Skills'] = processed_futurelearn['Skills'].progress_apply(lambda x: ', '.join(keyword[0] for keyword in model.extract_keywords(x, top_n=7, diversity = 0.8, use_mmr =True)))
 
 # Source
 processed_futurelearn['Source'] = 'Futurelearn'
@@ -261,6 +280,7 @@ def apply_lemmatization(text):
 
 processed_futurelearn['string']=processed_futurelearn['string'].apply(apply_lemmatization)
 
+# Keywords
 model = KeyBERT()
 
 # Extract top 10 keywords for each row in the 'Merged' column
